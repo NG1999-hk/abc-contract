@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ABC｜銷售合同生成器</title>
+<style>
+  :root{--ink:#0f1720;--ink2:#3c4a57;--muted:#7a8794;--bg:#f5f7fa;--card:#fff;--line:#e3e8ee;
+        --brand:#1f5eff;--brand-dark:#1547c4;--gold:#c9a227;--ok:#1f7a3f;--warn:#b26a00;--radius:12px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased}
+  header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+  .hwrap{max-width:1400px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800}
+  .logo .mark{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#6d9bff);color:#fff;display:grid;place-items:center;font-size:13px}
+  .tools{display:flex;gap:9px;flex-wrap:wrap}
+  .btn{padding:9px 15px;border-radius:9px;font-size:13.5px;font-weight:700;border:1px solid var(--line);
+       background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:#c8d3e0}
+  .btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn-primary:hover{background:var(--brand-dark)}
+  .btn-word{background:#2b579a;border-color:#2b579a;color:#fff}
+  .btn-word:hover{background:#1f4278}
+  .btn-ghost{background:transparent}
+  main{max-width:1400px;margin:0 auto;padding:20px;display:grid;grid-template-columns:minmax(340px,470px) 1fr;gap:20px;align-items:start}
+  @media(max-width:980px){main{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .panel h2{font-size:15.5px;font-weight:800;margin-bottom:4px}
+  .panel .hint{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+  fieldset{border:0;border-top:1px solid var(--line);margin-top:18px;padding-top:16px}
+  fieldset:first-of-type{border-top:0;margin-top:0;padding-top:0}
+  legend{font-size:13px;font-weight:800;color:var(--brand);padding-right:8px}
+  .f{margin-bottom:11px}
+  label{display:block;font-size:12.5px;color:var(--ink2);font-weight:700;margin-bottom:5px}
+  input[type=text],input[type=number],input[type=date],textarea,select{
+    width:100%;padding:9px 11px;border:1px solid #ccd6e0;border-radius:8px;font-size:14px;font-family:inherit;
+    color:var(--ink);background:#fff}
+  input:focus,textarea:focus,select:focus{outline:2px solid rgba(31,94,255,.25);border-color:var(--brand)}
+  textarea{min-height:64px;resize:vertical}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .unit{position:relative}
+  .unit .u{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
+  .unit input{padding-right:52px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:13px;padding:7px 12px;border:1px solid var(--line);
+        border-radius:999px;background:#fff;cursor:pointer;user-select:none;font-weight:600;color:var(--ink2)}
+  .chip input{accent-color:var(--brand)}
+  .chip:has(input:checked){border-color:var(--brand);background:rgba(31,94,255,.07);color:var(--brand)}
+  .cust{margin-top:10px}
+  .custrow{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+  .custrow textarea{min-height:44px}
+  .del{flex:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:#fff;
+       cursor:pointer;color:#c0392b;font-weight:800}
+  .addbtn{border:1px dashed var(--gold);color:#8a6d10;background:rgba(201,162,39,.07);border-radius:9px;
+          padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer}
+  .note{font-size:12px;color:var(--muted);margin-top:10px}
+  .langhint{background:#eef4ff;border:1px solid #cfe0ff;border-radius:9px;padding:10px 13px;font-size:12.4px;color:#1547c4;margin-bottom:16px}
+  .prevwrap{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .prevbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);background:#fbfcfe}
+  .prevbar .t{font-size:13px;font-weight:800;color:var(--ink2)}
+  .badge{font-size:11.5px;font-weight:700;color:var(--warn);background:#fff8e6;border:1px solid #f0e0b0;padding:3px 9px;border-radius:999px}
+  #contract{padding:38px 42px;font-size:13.6px;color:#111;max-width:900px;margin:0 auto;
+            font-family:"Times New Roman",Georgia,"Microsoft JhengHei",serif}
+  #contract h1{font-size:20px;text-align:center;letter-spacing:2px;margin-bottom:6px;font-family:inherit}
+  #contract .sub{text-align:center;font-size:11.6px;color:#666;margin-bottom:24px}
+  #contract .parties{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 18px}
+  #contract .pbox{border:1px solid #dfe5ec;border-radius:8px;padding:12px 14px;font-size:12.8px;line-height:1.6;background:#fcfdff}
+  #contract .pbox b{display:block;font-size:11px;color:#7a8794;margin-bottom:5px;letter-spacing:1.4px}
+  #contract h3{font-size:13.4px;margin:18px 0 7px;border-left:3px solid #1f5eff;padding-left:9px;font-family:inherit}
+  #contract p{margin-bottom:8px;text-align:justify}
+  #contract .blank{color:#b26a00;background:#fff8e6;padding:1px 6px;border-radius:4px;font-weight:700;font-size:12.2px}
+  #contract table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12.8px}
+  #contract th,#contract td{border:1px solid #dfe5ec;padding:8px 10px;text-align:left}
+  #contract th{background:#f5f7fa;font-weight:700}
+  #contract .sign{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:36px;font-size:12.4px}
+  #contract .sign .line{border-top:1px solid #333;margin-top:46px;padding-top:6px;color:#666}
+  #contract .legal{margin-top:26px;padding:12px 14px;border:1px solid #f0e0b0;background:#fff8e6;
+                   border-radius:8px;font-size:11.4px;color:#6b5510;line-height:1.65;font-family:inherit}
+  footer{max-width:1400px;margin:0 auto;padding:6px 20px 40px;color:var(--muted);font-size:12px}
+  @media print{
+    @page{size:A4;margin:16mm 14mm}
+    body{background:#fff}
+    header,main>.panel,footer,.prevbar,.tools{display:none !important}
+    main{display:block;padding:0;max-width:none}
+    .prevwrap{border:0;border-radius:0}
+    #contract{padding:0;max-width:none;font-size:10.8pt}
+    #contract h1{font-size:16pt}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hwrap">
+    <div class="logo"><span class="mark">合</span><span>ABC｜銷售合同生成器</span></div>
+    <div class="tools">
+      <button class="btn btn-ghost" id="btnSample">載入示範資料</button>
+      <button class="btn btn-ghost" id="btnSave">儲存</button>
+      <button class="btn btn-ghost" id="btnLoad">載入</button>
+      <button class="btn" id="btnClear">清除</button>
+      <button class="btn btn-word" id="btnWord">⬇️ 下載 Word (.docx)</button>
+      <button class="btn btn-primary" id="btnPrint">列印／存 PDF</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>填寫資料</h2>
+    <p class="hint">逐格填寫，右邊會即時生成合同。未填嘅欄位會以「To be provided」顯示。</p>
+
+    <div class="langhint">
+      ℹ️ 介面用繁體中文，但<b>生成嘅合同正文係英文</b>（English）✓
+    </div>
+
+    <fieldset>
+      <legend>買賣雙方</legend>
+      <div class="f"><label>賣方（我方）名稱</label><input type="text" id="s_name" placeholder="公司／個人名稱"></div>
+      <div class="row2">
+        <div class="f"><label>賣方商業登記／證件號碼</label><input type="text" id="s_br" placeholder="選填"></div>
+        <div class="f"><label>賣方聯絡人／電話</label><input type="text" id="s_contact" placeholder="選填"></div>
+      </div>
+      <div class="f"><label>賣方地址</label><input type="text" id="s_addr" placeholder="選填"></div>
+      <div class="f"><label>買方名稱</label><input type="text" id="b_name" placeholder="公司／個人名稱"></div>
+      <div class="row2">
+        <div class="f"><label>買方商業登記／證件號碼</label><input type="text" id="b_br" placeholder="選填"></div>
+        <div class="f"><label>買方聯絡人／電話</label><input type="text" id="b_contact" placeholder="選填"></div>
+      </div>
+      <div class="f"><label>買方地址</label><input type="text" id="b_addr" placeholder="選填"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>標的與金額</legend>
+      <div class="f"><label>貨品／服務名稱及規格</label>
+        <textarea id="item" placeholder="例：貨品名稱、型號、規格、數量"></textarea></div>
+      <div class="row2">
+        <div class="f"><label>單價（只可輸入數字）</label>
+          <input type="text" id="unit_price" inputmode="decimal" class="numonly" placeholder="例：100.00"></div>
+        <div class="f"><label>數量（只可輸入數字）</label>
+          <input type="text" id="qty" inputmode="numeric" class="numonly" placeholder="例：500"></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>幣別</label>
+          <select id="cur"><option value="">待選</option><option>HKD</option><option>RMB</option><option>USD</option><option>EUR</option><option>GBP</option></select></div>
+        <div class="f"><label>總額（只可輸入數字）</label>
+          <input type="text" id="total" inputmode="decimal" class="numonly" placeholder="例：50000.00"></div>
+      </div>
+      <div class="f"><label>付款方式及期數</label>
+        <textarea id="pay" placeholder="例：30% upon signing; 70% upon delivery and acceptance"></textarea></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>交貨</legend>
+      <div class="row2">
+        <div class="f"><label>交貨／完成日期（日曆選擇）</label><input type="date" id="deliv"></div>
+        <div class="f"><label>交貨地點</label><input type="text" id="place" placeholder="例：Kwun Tong, Hong Kong"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>船務／付運條款（Shipping Terms）</legend>
+      <div class="f"><label>貿易術語（Incoterms）</label>
+        <select id="incoterm">
+          <option value="">不適用／待選</option>
+          <option value="EXW">EXW — Ex Works（工廠交貨）</option>
+          <option value="FCA">FCA — Free Carrier（貨交承運人）</option>
+          <option value="FOB">FOB — Free On Board（裝運港船上交貨）</option>
+          <option value="CFR">CFR — Cost and Freight（成本加運費）</option>
+          <option value="CIF">CIF — Cost, Insurance and Freight（成本、保險加運費）</option>
+          <option value="DAP">DAP — Delivered At Place（目的地交貨）</option>
+          <option value="DDP">DDP — Delivered Duty Paid（完稅後交貨）</option>
+          <option value="FOC">FOC — Free of Charge（免費提供／贈品）</option>
+        </select>
+      </div>
+      <div class="row2">
+        <div class="f"><label>裝運港／發貨地</label><input type="text" id="pol" placeholder="例：Hong Kong"></div>
+        <div class="f"><label>目的港／收貨地</label><input type="text" id="pod" placeholder="例：Singapore"></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>運費承擔</label>
+          <select id="freight">
+            <option value="">待選</option>
+            <option value="seller">賣方承擔（Seller pays freight）</option>
+            <option value="buyer">買方承擔（Buyer pays freight）</option>
+            <option value="collect">到付（Freight collect）</option>
+            <option value="na">不適用</option>
+          </select>
+        </div>
+        <div class="f"><label>報關／清關責任</label>
+          <select id="customs">
+            <option value="">待選</option>
+            <option value="seller">賣方負責出口報關</option>
+            <option value="both">賣方出口報關、買方進口清關</option>
+            <option value="buyer">買方負責全部清關</option>
+          </select>
+        </div>
+      </div>
+      <div class="f"><label>付運文件（可多選）</label>
+        <div class="chips" id="docs">
+          <label class="chip"><input type="checkbox" data-doc="bl">提單 B/L</label>
+          <label class="chip"><input type="checkbox" data-doc="pl">裝箱單 Packing List</label>
+          <label class="chip"><input type="checkbox" data-doc="inv">商業發票 Invoice</label>
+          <label class="chip"><input type="checkbox" data-doc="co">產地證 C/O</label>
+          <label class="chip"><input type="checkbox" data-doc="ins">保險單 Insurance</label>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>運輸保險</label>
+          <select id="insurance">
+            <option value="">待選</option>
+            <option value="seller">由賣方投保（110% 貨值）</option>
+            <option value="buyer">由買方投保</option>
+            <option value="na">不適用</option>
+          </select>
+        </div>
+        <div class="f"><label>FOC 免費提供</label>
+          <select id="foc">
+            <option value="">不適用</option>
+            <option value="yes">是 — 此批貨品以 FOC 提供，不計價</option>
+          </select>
+        </div>
+      </div>
+      <div class="f"><label>FOC 用途（如適用，選填）</label>
+        <input type="text" id="foc_purpose" placeholder="例：sample / warranty replacement"></div>
+      <div class="row2">
+        <div class="f"><label>免費期（free time）</label>
+          <div class="unit"><input type="text" id="free_days" inputmode="numeric" class="numonly" placeholder="例：14"><span class="u">日</span></div></div>
+        <div class="f"><label>滯期費率（demurrage）</label>
+          <input type="text" id="dem_rate" placeholder="例：HKD 800 / day"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>條款細則（填數字，自動寫入條文）</legend>
+      <div class="row2">
+        <div class="f"><label>驗收期限</label>
+          <div class="unit"><input type="text" id="acc_days" inputmode="numeric" class="numonly" placeholder="例：7"><span class="u">日</span></div></div>
+        <div class="f"><label>補救期限（違約後）</label>
+          <div class="unit"><input type="text" id="cure_days" inputmode="numeric" class="numonly" placeholder="例：14"><span class="u">日</span></div></div>
+      </div>
+      <div class="row3">
+        <div class="f"><label>逾期罰率</label>
+          <div class="unit"><input type="text" id="late_pct" inputmode="decimal" class="numonly" placeholder="例：0.5"><span class="u">%／日</span></div></div>
+        <div class="f"><label>逾期上限</label>
+          <div class="unit"><input type="text" id="late_days" inputmode="numeric" class="numonly" placeholder="例：30"><span class="u">日</span></div></div>
+        <div class="f"><label>保養期</label>
+          <div class="unit"><input type="text" id="war_months" inputmode="numeric" class="numonly" placeholder="例：12"><span class="u">月</span></div></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>賠付上限（合約總額百分比）</label>
+          <div class="unit"><input type="text" id="dmg_cap" inputmode="decimal" class="numonly" placeholder="例：10"><span class="u">%</span></div></div>
+        <div class="f"><label>價格調整（選填）</label>
+          <input type="text" id="price_adj" placeholder="例：fixed price, no adjustment"></div>
+      </div>
+      <p class="note">呢啲數字會直接寫入對應條文（例如 “within 7 days”、“0.5 % per day”）✓ 留空就顯示 〔__〕 ✓</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>額外條款（可多選）</legend>
+      <div class="chips" id="clauses">
+        <label class="chip"><input type="checkbox" data-clause="accept">驗收標準</label>
+        <label class="chip"><input type="checkbox" data-clause="late">逾期交貨</label>
+        <label class="chip"><input type="checkbox" data-clause="damages">賠付條款</label>
+        <label class="chip"><input type="checkbox" data-clause="breach">違約後果</label>
+        <label class="chip"><input type="checkbox" data-clause="warranty">保養／售後</label>
+        <label class="chip"><input type="checkbox" data-clause="confid">保密</label>
+        <label class="chip"><input type="checkbox" data-clause="law">管轄法律及仲裁</label>
+        <label class="chip"><input type="checkbox" data-clause="force">不可抗力</label>
+        <label class="chip"><input type="checkbox" data-clause="title">所有權保留</label>
+        <label class="chip"><input type="checkbox" data-clause="inspect">裝運前檢驗</label>
+        <label class="chip"><input type="checkbox" data-clause="antifraud">反貪腐／合規</label>
+        <label class="chip"><input type="checkbox" data-clause="terminate">終止條款</label>
+      </div>
+      <p class="note">船務條款（Incoterms／運費／文件／保險／FOC）會<b>自動</b>按上面選擇加入 ✓ 唔需要重複勾選 ✓</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>自訂特殊條款</legend>
+      <div class="cust" id="custList"></div>
+      <button class="addbtn" id="btnAddCust">＋ 新增自訂條款</button>
+      <p class="note">自訂條款會原文照放入合同（建議用英文輸入）✓</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>其他</legend>
+      <div class="row2">
+        <div class="f"><label>簽約日期（日曆選擇）</label><input type="date" id="sign_date"></div>
+        <div class="f"><label>合同編號</label><input type="text" id="doc_no" placeholder="例：SC-2026-001"></div>
+      </div>
+    </fieldset>
+
+    <p class="note">⚠️ 本工具只協助你整理及排版合同文字，<b>不構成法律意見</b>。正式使用前請諮詢香港執業律師。</p>
+  </section>
+
+  <section class="prevwrap">
+    <div class="prevbar">
+      <span class="t">合同預覽（即時更新）</span>
+      <span class="badge">草稿 Draft — 未經律師審閱</span>
+    </div>
+    <div id="contract"></div>
+  </section>
+</main>
+
+<footer>ABC｜銷售合同生成器 ｜ 本地運作，資料只存在你自己的瀏覽器（按「儲存」）</footer>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var MISS = '<span class="blank">To be provided</span>';
+
+  function v(id){ var el = $(id); if(!el) return ""; return (el.value || "").trim(); }
+  function esc(s){ return String(s).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+  function or(id){ var s = v(id); return s ? esc(s) : MISS; }
+  function b(id){ var s = v(id); return s ? "<b>" + esc(s) + "</b>" : "〔__〕"; }
+
+  var INCOTERM_NAME = {
+    EXW:"Ex Works (EXW)", FCA:"Free Carrier (FCA)", FOB:"Free On Board (FOB)",
+    CFR:"Cost and Freight (CFR)", CIF:"Cost, Insurance and Freight (CIF)",
+    DAP:"Delivered At Place (DAP)", DDP:"Delivered Duty Paid (DDP)",
+    FOC:"Free of Charge (FOC)"
+  };
+  var DOC_NAME = { bl:"Bill of Lading (B/L)", pl:"Packing List", inv:"Commercial Invoice",
+                   co:"Certificate of Origin", ins:"Insurance Policy" };
+
+  function shipDocs(){
+    var out = [];
+    document.querySelectorAll('#docs input[type=checkbox]').forEach(function(cb){
+      if(cb.checked) out.push(DOC_NAME[cb.getAttribute('data-doc')]);
+    });
+    return out;
+  }
+
+  var CLAUSE_TEXT = {
+    accept:  {t:"Acceptance", b:function(){
+      return "The Buyer shall complete inspection of the Goods and confirm acceptance in writing within " + b("acc_days") +
+             " days after receipt. Failure to raise any objection within that period shall constitute acceptance. The acceptance standard shall be based on the samples, specifications or annexes agreed in writing by the parties.";}},
+    late:    {t:"Late Delivery", b:function(){
+      return "If the Seller fails to deliver on time, the Seller shall pay liquidated damages at " + b("late_pct") +
+             " % of the total contract sum for each day of delay. If the delay exceeds " + b("late_days") +
+             " days, the Buyer may terminate this Agreement and claim compensation for actual loss.";}},
+    damages: {t:"Liquidated Damages", b:function(){
+      return "If either party breaches this Agreement and causes loss to the other party, the breaching party shall compensate the other party for direct loss suffered, subject to a cap of " + b("dmg_cap") +
+             " % of the total contract sum. This limitation shall not apply to wilful misconduct or gross negligence.";}},
+    breach:  {t:"Consequences of Breach", b:function(){
+      return "If either party fails to remedy any breach of this Agreement within " + b("cure_days") +
+             " days after written notice from the other party, the other party may terminate this Agreement, demand repayment of any sums paid and pursue liability for such breach.";}},
+    warranty:{t:"Warranty and After-sales Service", b:function(){
+      return "The Seller warrants the Goods / Services delivered for " + b("war_months") +
+             " months from the date of acceptance. During the warranty period, the Seller shall repair or replace any defect arising from normal use. Damage caused by misuse, improper handling or force majeure is excluded from this warranty.";}},
+    confid:  {t:"Confidentiality", b:function(){
+      return "Each party shall keep confidential all commercial, technical and pricing information of the other party obtained in connection with this Agreement, and shall not disclose the same to any third party without prior written consent. This obligation shall survive termination of this Agreement.";}},
+    law:     {t:"Governing Law and Arbitration", b:function(){
+      return "This Agreement shall be governed by and construed in accordance with the laws of the Hong Kong Special Administrative Region. Any dispute arising out of or in connection with this Agreement shall first be resolved through friendly negotiation; failing which, the dispute shall be submitted to the Hong Kong International Arbitration Centre (\u201cHKIAC\u201d) for arbitration in accordance with its rules.";}},
+    force:   {t:"Force Majeure", b:function(){
+      return "Neither party shall be liable for any failure or delay in performance caused by natural disaster, war, epidemic, governmental act or any other event of force majeure, provided that the affected party promptly notifies the other party and provides supporting evidence, and takes reasonable steps to mitigate the loss.";}},
+    title:   {t:"Retention of Title", b:function(){
+      return "Title to the Goods shall remain with the Seller until the Buyer has paid the total contract sum in full. Until such payment, the Buyer shall hold the Goods as bailee of the Seller and shall not pledge or otherwise encumber them.";}},
+    inspect: {t:"Pre-shipment Inspection", b:function(){
+      return "The Buyer or its authorised representative shall be entitled to inspect and test the Goods at the Seller\u2019s premises before shipment. Any defect identified shall be rectified by the Seller prior to shipment, and such inspection shall not relieve the Seller of its obligations under this Agreement.";}},
+    antifraud:{t:"Anti-bribery and Compliance", b:function(){
+      return "Each party shall comply with all applicable anti-bribery, anti-corruption, sanctions and export control laws, and shall not, directly or indirectly, offer or accept any improper payment or advantage in connection with this Agreement. Any breach of this clause entitles the other party to terminate this Agreement immediately.";}},
+    terminate:{t:"Termination", b:function(){
+      return "Either party may terminate this Agreement forthwith by written notice if the other party (a) commits a material breach which is not remedied; (b) becomes insolvent or subject to any liquidation, winding-up or receivership proceedings; or (c) suspends or ceases to carry on business.";}}
+  };
+
+  function clauseList(){
+    var out = [];
+    document.querySelectorAll('#clauses input[type=checkbox]').forEach(function(cb){
+      if(cb.checked && CLAUSE_TEXT[cb.getAttribute('data-clause')]) out.push(cb.getAttribute('data-clause'));
+    });
+    return out;
+  }
+
+  function customList(){
+    var arr = [];
+    document.querySelectorAll('#custList textarea').forEach(function(t){
+      var s = (t.value||"").trim(); if(s) arr.push(s);
+    });
+    return arr;
+  }
+
+  function addCust(value){
+    var row = document.createElement('div');
+    row.className = 'custrow';
+    var ta = document.createElement('textarea');
+    ta.placeholder = '自行輸入特殊條款（例：The Goods shall not be resold to the specified territory.）';
+    if(value) ta.value = value;
+    ta.addEventListener('input', render);
+    var btn = document.createElement('button');
+    btn.className = 'del'; btn.type = 'button'; btn.textContent = '×';
+    btn.addEventListener('click', function(){ row.remove(); render(); });
+    row.appendChild(ta); row.appendChild(btn);
+    $('custList').appendChild(row);
+    return ta;
+  }
+
+  function shippingClauses(){
+    var out = [];
+    var inc = v("incoterm"), pol = v("pol"), pod = v("pod");
+    var fr = v("freight"), cu = v("customs"), ins = v("insurance");
+    var docs = shipDocs(), foc = v("foc") === "yes";
+    var freeDays = v("free_days"), dem = v("dem_rate");
+    if(!(inc || pol || pod || fr || cu || ins || docs.length || foc || freeDays || dem)) return out;
+
+    if(inc === "FOC" || foc){
+      out.push({t:"Free of Charge (FOC) Goods", b:
+        "The Goods specified in this Agreement are supplied on a Free of Charge (FOC) basis. No price, fee or other consideration is payable by the Buyer for such Goods. " +
+        "Ownership in the FOC Goods passes to the Buyer upon delivery, provided that the Buyer shall use them only for the agreed purpose" +
+        (v("foc_purpose") ? " (Purpose: " + esc(v("foc_purpose")) + ")" : "") + ". " +
+        "The FOC Goods shall be excluded from the calculation of the total contract sum, and the Seller gives no warranty in respect of them beyond that stated in this Agreement."});
+    }
+    if(inc && inc !== "FOC"){
+      out.push({t:"Trade Terms \u2014 " + INCOTERM_NAME[inc], b:
+        "The Goods are sold on " + INCOTERM_NAME[inc] + " terms (Incoterms\u00ae 2020). " +
+        (pol ? "Port / place of shipment: " + esc(pol) + ". " : "") +
+        (pod ? "Port / place of destination: " + esc(pod) + ". " : "") +
+        "Risk in the Goods shall pass in accordance with the applicable Incoterm, and where these terms conflict with any other provision of this Agreement, the Incoterm shall prevail."});
+    }
+    if(pol || pod){
+      out.push({t:"Shipment", b:
+        (pol ? "Shipment shall be made from " + esc(pol) + ". " : "") +
+        (pod ? "The Goods shall be delivered to " + esc(pod) + ". " : "") +
+        "The Seller shall notify the Buyer of the shipment details within a reasonable time after shipment."});
+    }
+    if(fr){
+      out.push({t:"Freight", b: fr === "seller" ? "Freight and freight-related charges shall be borne by the Seller."
+        : fr === "buyer" ? "Freight and freight-related charges shall be borne by the Buyer."
+        : fr === "collect" ? "Freight shall be payable by the Buyer on a freight-collect basis."
+        : "Freight arrangements are not applicable to this Agreement."});
+    }
+    if(cu){
+      out.push({t:"Customs Declaration and Clearance", b: cu === "seller" ? "The Seller shall be responsible for export customs declaration of the Goods."
+        : cu === "both" ? "The Seller shall be responsible for export customs declaration and the Buyer shall be responsible for import customs clearance."
+        : "The Buyer shall be responsible for all customs declaration and clearance procedures."});
+    }
+    if(docs.length){
+      out.push({t:"Shipping Documents", b:
+        "The Seller shall provide the following documents to the Buyer: " + docs.join("; ") +
+        ". All documents shall be issued in the name of the Buyer and be consistent with this Agreement."});
+    }
+    if(ins){
+      out.push({t:"Insurance", b: ins === "seller" ? "The Seller shall effect marine cargo insurance covering the Goods for not less than 110% of the total contract sum, with the Buyer as the assured."
+        : ins === "buyer" ? "The Buyer shall be responsible for arranging cargo insurance for the Goods."
+        : "Cargo insurance is not applicable to this Agreement."});
+    }
+    if(freeDays || dem){
+      out.push({t:"Free Time and Demurrage", b:
+        (freeDays ? "The Buyer shall be allowed " + b("free_days") + " days of free time for container use / cargo collection. " : "") +
+        (dem ? "Demurrage or detention charges incurred beyond the free time shall be payable at " + esc(dem) + ". " : "") +
+        "Any such charges shall be supported by the carrier\u2019s invoice or statement."});
+    }
+    return out;
+  }
+
+  function buildBlocks(){
+    var unitTxt = v("unit_price") ? esc(v("unit_price")) : "〔__〕";
+    var qtyTxt  = v("qty") ? esc(v("qty")) : "〔__〕";
+    var curTxt  = v("cur") ? esc(v("cur")) : "";
+    var totalTxt = v("total") ? (esc(v("total")) + (curTxt ? " " + curTxt : "")) : MISS;
+
+    var blocks = [];
+    blocks.push({type:"h1", text:"SALES CONTRACT"});
+    blocks.push({type:"sub", text:(v("doc_no") ? "Contract No.: " + v("doc_no") + "  |  " : "") + "DRAFT \u2014 not reviewed by a solicitor"});
+    blocks.push({type:"pbox", title:"SELLER", html:
+      "Name: " + or("s_name") +
+      (v("s_br") ? "<br>BR / ID No.: " + esc(v("s_br")) : "") +
+      (v("s_addr") ? "<br>Address: " + esc(v("s_addr")) : "") +
+      (v("s_contact") ? "<br>Contact: " + esc(v("s_contact")) : "")});
+    blocks.push({type:"pbox", title:"BUYER", html:
+      "Name: " + or("b_name") +
+      (v("b_br") ? "<br>BR / ID No.: " + esc(v("b_br")) : "") +
+      (v("b_addr") ? "<br>Address: " + esc(v("b_addr")) : "") +
+      (v("b_contact") ? "<br>Contact: " + esc(v("b_contact")) : "")});
+    blocks.push({type:"p", html:"This Agreement is made between " + or("s_name") + " (the \u201cSeller\u201d) and " + or("b_name") +
+      " (the \u201cBuyer\u201d), whereby the Seller agrees to sell and the Buyer agrees to purchase the goods and/or services described below (the \u201cGoods\u201d), on the following terms and conditions:"});
+    blocks.push({type:"h3", text:"1. Goods and Price"});
+    blocks.push({type:"table", rows:[
+      ["Item","Details"],
+      ["Goods / Services", v("item") ? esc(v("item")) : MISS],
+      ["Unit Price \u00d7 Quantity", unitTxt + " \u00d7 " + qtyTxt],
+      ["Total Contract Sum", "<b>" + totalTxt + "</b>"]
+    ]});
+    blocks.push({type:"h3", text:"2. Payment"});
+    blocks.push({type:"p", html: or("pay")});
+    blocks.push({type:"h3", text:"3. Delivery"});
+    blocks.push({type:"p", html:"Delivery / completion date: " + or("deliv") + "  |  Place of delivery: " + or("place") +
+      ". The Seller shall deliver the Goods at the time and place stated above."});
+
+    var n = 3;
+    shippingClauses().forEach(function(c){ n++; blocks.push({type:"h3", text:n + ". " + c.t}); blocks.push({type:"p", html:c.b}); });
+    clauseList().forEach(function(key){
+      var c = CLAUSE_TEXT[key]; n++;
+      blocks.push({type:"h3", text:n + ". " + c.t});
+      blocks.push({type:"p", html:c.b()});
+    });
+    var customs = customList();
+    if(customs.length){
+      n++;
+      blocks.push({type:"h3", text:n + ". Other Terms"});
+      customs.forEach(function(t, i){ blocks.push({type:"p", html:n + "." + (i+1) + "  " + esc(t)}); });
+    }
+    n++;
+    blocks.push({type:"h3", text:n + ". General"});
+    blocks.push({type:"p", html:n + ".1  This Agreement takes effect on the date of signature by both parties. Any amendment must be agreed in writing by both parties."});
+    blocks.push({type:"p", html:n + ".2  No failure or delay by either party in exercising any right under this Agreement shall operate as a waiver of that right."});
+    blocks.push({type:"p", html:n + ".3  If any provision of this Agreement is held to be invalid, the remaining provisions shall remain in full force and effect."});
+    blocks.push({type:"p", html:n + ".4  This Agreement is made in two (2) counterparts, one for each party, each of equal legal effect."});
+    blocks.push({type:"sign", left:"For and on behalf of the Seller:", right:"For and on behalf of the Buyer:", date: v("sign_date") || "________________"});
+    blocks.push({type:"legal", text:"Disclaimer: This document is generated automatically by a document tool based on information entered by the user. It is a technical service and does not constitute legal advice. Whether its terms are applicable or legally effective depends on the circumstances and the applicable law. Fields marked \u201c〔__〕\u201d or \u201cTo be provided\u201d must be completed by the user before signing. You are advised to consult a solicitor qualified in Hong Kong before formal use."});
+    return blocks;
+  }
+
+  function htmlOfBlocks(blocks){
+    var h = "", boxes = [];
+    blocks.forEach(function(bl){
+      if(bl.type === "h1") h += "<h1>" + esc(bl.text) + "</h1>";
+      else if(bl.type === "sub") h += '<div class="sub">' + esc(bl.text) + "</div>";
+      else if(bl.type === "pbox") boxes.push(bl);
+      else if(bl.type === "p") h += "<p>" + bl.html + "</p>";
+      else if(bl.type === "h3") h += "<h3>" + esc(bl.text) + "</h3>";
+      else if(bl.type === "table"){
+        h += "<table>";
+        bl.rows.forEach(function(r, i){
+          var tag = i === 0 ? "th" : "td";
+          h += "<tr><" + tag + " style='width:28%'>" + r[0] + "</" + tag + "><" + tag + ">" + r[1] + "</" + tag + "></tr>";
+        });
+        h += "</table>";
+      }
+      else if(bl.type === "sign"){
+        h += '<div class="sign">';
+        h += "<div>" + esc(bl.left) + "<div class='line'>Name / Title:<br>Date: " + esc(bl.date) + "</div></div>";
+        h += "<div>" + esc(bl.right) + "<div class='line'>Name / Title:<br>Date: " + esc(bl.date) + "</div></div>";
+        h += "</div>";
+      }
+      else if(bl.type === "legal"){
+        h += '<div class="legal"><b>Disclaimer:</b> ' + esc(bl.text.replace(/^Disclaimer:\s*/, "")) + "</div>";
+      }
+    });
+    if(boxes.length){
+      var pb = '<div class="parties">';
+      boxes.forEach(function(bx){ pb += '<div class="pbox"><b>' + esc(bx.title) + "</b>" + bx.html + "</div>"; });
+      pb += "</div>";
+      if(h.indexOf("<p>") >= 0) h = h.replace("<p>", pb + "<p>");
+      else h += pb;
+    }
+    return h;
+  }
+
+  function render(){ $("contract").innerHTML = htmlOfBlocks(buildBlocks()); }
+
+  // ================= real .docx export (no libraries) =================
+  var CRC_TABLE = (function(){
+    var t = new Uint32Array(256);
+    for (var n = 0; n < 256; n++){
+      var c = n;
+      for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(u8){
+    var c = 0xFFFFFFFF;
+    for (var i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  function zipStore(files){
+    var enc = new TextEncoder(), chunks = [], central = [], offset = 0;
+    function u16(a, val){ a.push(val & 0xFF, (val >>> 8) & 0xFF); }
+    function u32(a, val){ a.push(val & 0xFF, (val >>> 8) & 0xFF, (val >>> 16) & 0xFF, (val >>> 24) & 0xFF); }
+    files.forEach(function(f){
+      var nameU8 = enc.encode(f.name), dataU8 = enc.encode(f.text);
+      var crc = crc32(dataU8), n = dataU8.length;
+      var lh = [];
+      u32(lh, 0x04034b50); u16(lh, 20); u16(lh, 0x0800); u16(lh, 0); u16(lh, 0); u16(lh, 0);
+      u32(lh, crc); u32(lh, n); u32(lh, n); u16(lh, nameU8.length); u16(lh, 0);
+      chunks.push(new Uint8Array(lh), nameU8, dataU8);
+      var ch = [];
+      u32(ch, 0x02014b50); u16(ch, 20); u16(ch, 20); u16(ch, 0x0800); u16(ch, 0); u16(ch, 0); u16(ch, 0);
+      u32(ch, crc); u32(ch, n); u32(ch, n); u16(ch, nameU8.length);
+      u16(ch, 0); u16(ch, 0); u16(ch, 0); u16(ch, 0); u32(ch, 0); u32(ch, offset);
+      central.push(new Uint8Array(ch), nameU8);
+      offset += lh.length + nameU8.length + n;
+    });
+    var cdStart = offset, cdSize = 0;
+    central.forEach(function(c){ cdSize += c.length; });
+    var end = [];
+    u32(end, 0x06054b50); u16(end, 0); u16(end, 0); u16(end, files.length); u16(end, files.length);
+    u32(end, cdSize); u32(end, cdStart); u16(end, 0);
+    var all = chunks.concat(central, [new Uint8Array(end)]);
+    var total = 0; all.forEach(function(c){ total += c.length; });
+    var out = new Uint8Array(total), p = 0;
+    all.forEach(function(c){ out.set(c, p); p += c.length; });
+    return out;
+  }
+
+  function xmlEsc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+                    .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+  }
+  function htmlToRuns(html){
+    var runs = [], parts = String(html).split(/(<b>|<\/b>|<br\s*\/?>)/i), bold = false;
+    parts.forEach(function(p){
+      if(/^<b>$/i.test(p)){ bold = true; return; }
+      if(/^<\/b>$/i.test(p)){ bold = false; return; }
+      if(/^<br\s*\/?>$/i.test(p)){ runs.push({br:true}); return; }
+      if(!p) return;
+      runs.push({text:p.replace(/<[^>]+>/g, ""), bold:bold});
+    });
+    return runs;
+  }
+  function runsXml(runs, size, boldAll){
+    var x = "";
+    runs.forEach(function(r){
+      if(r.br){ x += "<w:r><w:br/></w:r>"; return; }
+      if(!r.text) return;
+      var bb = (r.bold || boldAll) ? "<w:b/>" : "";
+      var sz = size || 21;
+      x += '<w:r><w:rPr>' + bb + '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/></w:rPr>' +
+           '<w:t xml:space="preserve">' + xmlEsc(r.text) + "</w:t></w:r>";
+    });
+    return x;
+  }
+  function para(runs, opts){
+    opts = opts || {};
+    var pPr = "<w:pPr>";
+    if(opts.align) pPr += '<w:jc w:val="' + opts.align + '"/>';
+    pPr += '<w:spacing w:before="' + (opts.spacing || 0) + '" w:after="120"/>';
+    if(opts.keep) pPr += "<w:keepNext/>";
+    pPr += "</w:pPr>";
+    return "<w:p>" + pPr + runs + "</w:p>";
+  }
+  function borders(color){
+    return '<w:tblBorders>' + ["top","left","bottom","right","insideH","insideV"].map(function(s){
+      return '<w:' + s + ' w:val="single" w:sz="4" w:space="0" w:color="' + (color || "DFE5EC") + '"/>';
+    }).join("") + "</w:tblBorders>";
+  }
+
+  function wordDocumentXml(blocks){
+    var body = "", boxes = [];
+    blocks.forEach(function(bl){
+      if(bl.type === "h1") body += para(runsXml([{text:bl.text, bold:true}], 32, true), {align:"center", spacing:0});
+      else if(bl.type === "sub") body += para(runsXml([{text:bl.text}], 17), {align:"center"});
+      else if(bl.type === "pbox") boxes.push(bl);
+      else if(bl.type === "h3") body += para(runsXml([{text:bl.text, bold:true}], 24, true), {spacing:220, keep:true});
+      else if(bl.type === "p") body += para(runsXml(htmlToRuns(bl.html)), {align:"both"});
+      else if(bl.type === "table"){
+        var rows = bl.rows.map(function(r, i){
+          var cells = r.map(function(cell, j){
+            var runs = (i === 0) ? runsXml([{text:String(cell), bold:true}], 20, true) : runsXml(htmlToRuns(cell), 20);
+            var w = (j === 0) ? "3200" : "6200";
+            return '<w:tc><w:tcPr><w:tcW w:w="' + w + '" w:type="dxa"/>' +
+                   (i === 0 ? '<w:shd w:val="clear" w:color="auto" w:fill="F5F7FA"/>' : "") +
+                   "</w:tcPr>" + para(runs, {}) + "</w:tc>";
+          }).join("");
+          return "<w:tr>" + cells + "</w:tr>";
+        }).join("");
+        body += '<w:tbl><w:tblPr><w:tblW w:w="9400" w:type="dxa"/>' + borders() + "</w:tblPr>" + rows + "</w:tbl>" +
+                para("", {});
+      }
+      else if(bl.type === "sign"){
+        body += para("", {});
+        body += para(runsXml([{text:bl.left, bold:true}], 21), {spacing:200});
+        body += para(runsXml([{text:"Name / Title: ____________________"}], 21), {});
+        body += para(runsXml([{text:"Date: " + bl.date}], 21), {});
+        body += para("", {});
+        body += para(runsXml([{text:bl.right, bold:true}], 21), {spacing:200});
+        body += para(runsXml([{text:"Name / Title: ____________________"}], 21), {});
+        body += para(runsXml([{text:"Date: " + bl.date}], 21), {});
+      }
+      else if(bl.type === "legal") body += para(runsXml([{text:bl.text}], 18), {align:"both", spacing:260});
+    });
+    if(boxes.length){
+      var cells2 = boxes.map(function(bx){
+        var inner = para(runsXml([{text:bx.title, bold:true}], 18, true), {});
+        var runs = htmlToRuns(bx.html), lineRuns = [], lines = [];
+        runs.forEach(function(r){ if(r.br){ lines.push(lineRuns); lineRuns = []; } else lineRuns.push(r); });
+        if(lineRuns.length) lines.push(lineRuns);
+        lines.forEach(function(lr){ if(lr.length) inner += para(runsXml(lr, 20), {}); });
+        return '<w:tc><w:tcPr><w:tcW w:w="4700" w:type="dxa"/></w:tcPr>' + inner + "</w:tc>";
+      }).join("");
+      var tbl = '<w:tbl><w:tblPr><w:tblW w:w="9400" w:type="dxa"/>' +
+                '<w:tblBorders>' + ["top","left","bottom","right"].map(function(s){
+                  return '<w:' + s + ' w:val="single" w:sz="4" w:space="0" w:color="DFE5EC"/>';
+                }).join("") + "</w:tblBorders></w:tblPr><w:tr>" + cells2 + "</w:tr></w:tbl>";
+      var first = body.indexOf('w:jc w:val="center"');
+      var second = body.indexOf('w:jc w:val="center"', first + 1);
+      var idx = second > 0 ? body.indexOf("</w:p>", second) : -1;
+      if(idx > 0) body = body.slice(0, idx + 6) + tbl + body.slice(idx + 6);
+      else body = tbl + body;
+    }
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      "<w:body>" + body +
+      '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>' +
+      '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr>' +
+      "</w:body></w:document>";
+  }
+
+  var CONTENT_TYPES = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    "</Types>";
+  var RELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    "</Relationships>";
+
+  function downloadDocx(){
+    var bytes = zipStore([
+      {name:"[Content_Types].xml", text:CONTENT_TYPES},
+      {name:"_rels/.rels", text:RELS},
+      {name:"word/document.xml", text:wordDocumentXml(buildBlocks())}
+    ]);
+    var blob = new Blob([bytes], {type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+    var name = (v("doc_no") || "Sales-Contract") + ".docx";
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  // ---------- numeric only + live render ----------
+  document.addEventListener('input', function(e){
+    var el = e.target;
+    if(el && el.classList && el.classList.contains('numonly')){
+      var cleaned = (el.value || "").replace(/[^\d.]/g, "");
+      var i = cleaned.indexOf(".");
+      if(i >= 0) cleaned = cleaned.slice(0, i + 1) + cleaned.slice(i + 1).replace(/\./g, "");
+      if(cleaned !== el.value) el.value = cleaned;
+    }
+    if(el && el.closest && el.closest('main')) render();
+  });
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.closest && e.target.closest('main')) render();
+  });
+
+  $("btnAddCust").addEventListener('click', function(){ addCust(""); render(); });
+  $("btnPrint").addEventListener('click', function(){ window.print(); });
+  $("btnWord").addEventListener('click', downloadDocx);
+
+  $("btnClear").addEventListener('click', function(){
+    if(!confirm("確定清除所有已填資料？")) return;
+    document.querySelectorAll('main input, main textarea').forEach(function(el){
+      if(el.type === 'checkbox') el.checked = false; else el.value = "";
+    });
+    document.querySelectorAll('main select').forEach(function(s){ s.value = ""; });
+    $("custList").innerHTML = "";
+    render();
+  });
+
+  $("btnSave").addEventListener('click', function(){
+    var data = { fields:{}, clauses:[], customs:[], docs:[] };
+    document.querySelectorAll('main input, main textarea').forEach(function(el){
+      if(el.id && el.type !== 'checkbox') data.fields[el.id] = el.value;
+    });
+    document.querySelectorAll('main select').forEach(function(s){ if(s.id) data.fields[s.id] = s.value; });
+    document.querySelectorAll('#clauses input[type=checkbox]').forEach(function(cb){
+      if(cb.checked) data.clauses.push(cb.getAttribute('data-clause'));
+    });
+    document.querySelectorAll('#docs input[type=checkbox]').forEach(function(cb){
+      if(cb.checked) data.docs.push(cb.getAttribute('data-doc'));
+    });
+    data.customs = customList();
+    try{ localStorage.setItem('contract_draft_v2', JSON.stringify(data)); alert("已儲存到本瀏覽器（只存在你部機）。"); }
+    catch(err){ alert("儲存失敗：" + err.message); }
+  });
+
+  $("btnLoad").addEventListener('click', function(){
+    var raw = null;
+    try{ raw = localStorage.getItem('contract_draft_v2'); }catch(e){}
+    if(!raw){ alert("未找到已儲存嘅草稿。"); return; }
+    var data; try{ data = JSON.parse(raw); }catch(e){ alert("草稿格式錯誤。"); return; }
+    Object.keys(data.fields || {}).forEach(function(k){ var el = $(k); if(el) el.value = data.fields[k]; });
+    document.querySelectorAll('#clauses input[type=checkbox]').forEach(function(cb){
+      cb.checked = (data.clauses||[]).indexOf(cb.getAttribute('data-clause')) >= 0;
+    });
+    document.querySelectorAll('#docs input[type=checkbox]').forEach(function(cb){
+      cb.checked = (data.docs||[]).indexOf(cb.getAttribute('data-doc')) >= 0;
+    });
+    $("custList").innerHTML = "";
+    (data.customs||[]).forEach(function(t){ addCust(t); });
+    render();
+  });
+
+  $("btnSample").addEventListener('click', function(){
+    $("doc_no").value = "SC-2026-001";
+    $("s_name").value = "Sample Seller Company Limited";
+    $("b_name").value = "Sample Buyer Company Limited";
+    $("item").value = "Sample goods / model / specification, 500 units";
+    $("unit_price").value = "100.00"; $("qty").value = "500";
+    $("cur").value = "HKD"; $("total").value = "50000.00";
+    $("pay").value = "30% upon signing; 70% upon delivery and acceptance";
+    $("deliv").value = "2026-11-30"; $("place").value = "Kwun Tong, Hong Kong";
+    $("sign_date").value = "2026-10-15";
+    $("incoterm").value = "FOB"; $("pol").value = "Hong Kong"; $("pod").value = "Singapore";
+    $("freight").value = "seller"; $("customs").value = "both"; $("insurance").value = "seller";
+    $("free_days").value = "14"; $("dem_rate").value = "HKD 800 / day";
+    document.querySelector('#docs input[data-doc=bl]').checked = true;
+    document.querySelector('#docs input[data-doc=inv]').checked = true;
+    $("acc_days").value = "7"; $("cure_days").value = "14";
+    $("late_pct").value = "0.5"; $("late_days").value = "30"; $("war_months").value = "12";
+    $("dmg_cap").value = "10";
+    ["accept","late","damages","breach","warranty","law","force","title"].forEach(function(k){
+      var cb = document.querySelector('#clauses input[data-clause=' + k + ']');
+      if(cb) cb.checked = true;
+    });
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
